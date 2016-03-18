@@ -1,9 +1,12 @@
 import React from 'react';
+import ChannelSection from './components/channel_section';
+
 
 class App extends React.Component {
   render() {
     return (
-      <div> Hello </div>
+     <ChannelSection></ChannelSection>
+
     );
   }
 }
