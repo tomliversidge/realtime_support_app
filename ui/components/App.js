@@ -11,14 +11,30 @@ class App extends Component {
       channels: [],
       activeChannel: {},
       users: [],
-      messages: []
+      messages: [],
+      connected: false
     }
+  }
+  componentDidMount() {
+    let ws = this.ws = new WebSocket('ws://echo.websocket.org');
+    
+  }
+
+  newChannel(channel){
+    let {channels} = this.state;
+    channels.push(channel);
+    this.setState({channels});
   }
   addChannel(name){
     let { channels } = this.state;
-    channels.push({id: channels.length, name});
-    this.setState({channels});
-    // TODO send to server
+    let msg = {
+      name:'channel add',
+      data: {
+        id: channels.length,
+        name
+      }
+    };
+    this.ws.send(JSON.stringify(msg));
   }
   setChannel(activeChannel){
     this.setState({activeChannel});
