@@ -18,7 +18,7 @@ class App extends Component {
     }
 
     componentDidMount() {
-        let socket = this.socket = new Socket();// WebSocket('ws://echo.websocket.org');
+        let socket = this.socket = new Socket();
         socket.on('connect', this.onConnect.bind(this));
         socket.on('disconnect', this.onDisconnect.bind(this));
         socket.on('channel add', this.onAddChannel.bind(this));
@@ -76,8 +76,6 @@ class App extends Component {
     addChannel(name){
         this.socket.emit('channel add', {name});
     }
-
-
 
     setChannel(activeChannel) {
         this.setState({activeChannel});
