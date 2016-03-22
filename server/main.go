@@ -1,77 +1,32 @@
 package main
 
 import (
+	"log"
 	"net/http"
+
+	r "github.com/dancannon/gorethink"
 )
 
 type Channel struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Id   string `json:"id" gorethink:"id,omitempty`
+	Name string `json:"name" gorethink:"name"`
+}
+type User struct {
+	Id   string `gorethink:"id,omitempty"`
+	Name string `gorethink:"name"`
 }
 
-//
-// func addChannel(data interface{}) error {
-// 	var channel Channel
-// 	err := mapstructure.Decode(data, &channel)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	channel.Id = "1"
-// 	fmt.Println("added channel")
-// 	return nil
-// }
-
 func main() {
-	router := NewRouter()
+	session, err := r.Connect(r.ConnectOpts{
+		Address:  "localhost:28015",
+		Database: "rtsupport",
+	})
+
+	if err != nil {
+		log.Panic(err.Error())
+	}
+	router := NewRouter(session)
 	router.Handle("channel add", addChannel)
 	http.Handle("/", router)
 	http.ListenAndServe(":4000", nil)
 }
-
-//
-// func handler(w http.ResponseWriter, r *http.Request) {
-//
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		return
-// 	}
-// 	for {
-// 		var inMessage Message
-// 		var outMessage Message
-// 		if err := socket.ReadJSON(&inMessage); err != nil {
-// 			fmt.Println(err)
-// 			return
-// 		}
-//
-// 		fmt.Printf("%#v\n", inMessage)
-// 		switch inMessage.Name {
-// 		case "channel add":
-// 			{
-// 				err := addChannel(inMessage.Data)
-// 				if err != nil {
-// 					outMessage = Message{"error", err}
-// 					if err := socket.WriteJSON(outMessage); err != nil {
-// 						fmt.Println(err)
-// 						break
-// 					}
-// 				}
-// 			}
-// 		case "channel subscribe":
-// 			{
-// 				go subscribeChannel(socket)
-// 			}
-// 		}
-//
-// 	}
-// }
-//
-// func subscribeChannel(socket *websocket.Conn) {
-// 	for {
-// 		time.Sleep(time.Second * 1)
-// 		message := Message{"channel add",
-// 			Channel{"1", "Software Support"}}
-// 		socket.WriteJSON(message)
-// 		fmt.Println("sent new channel")
-// 	}
-// }
