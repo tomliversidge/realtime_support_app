@@ -10,6 +10,12 @@ import (
 
 type Handler func(*Client, interface{})
 
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin:     func(r *http.Request) bool { return true },
+}
+
 type Router struct {
 	rules   map[string]Handler
 	session *r.Session
@@ -21,19 +27,14 @@ func NewRouter(session *r.Session) *Router {
 		session: session,
 	}
 }
-func (r *Router) FindHandler(msgName string) (Handler, bool) {
-	handler, found := r.rules[msgName]
-	return handler, found
-}
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin:     func(r *http.Request) bool { return true },
-}
 
 func (r *Router) Handle(msgName string, handler Handler) {
 	r.rules[msgName] = handler
+}
+
+func (r *Router) FindHandler(msgName string) (Handler, bool) {
+	handler, found := r.rules[msgName]
+	return handler, found
 }
 
 func (e *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -46,5 +47,6 @@ func (e *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	client := NewClient(socket, e.FindHandler, e.session)
 	defer client.Close()
 	go client.Write()
-	client.Read()	
+	client.Read()
+
 }
