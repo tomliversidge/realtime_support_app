@@ -13,10 +13,10 @@ type Message struct {
 }
 
 type Client struct {
-	send        chan Message
-	socket      *websocket.Conn
-	findHandler FindHandler
-	session     *r.Session
+	send         chan Message
+	socket       *websocket.Conn
+	findHandler  FindHandler
+	session      *r.Session
 	stopChannels map[int]chan bool
 }
 
@@ -56,18 +56,18 @@ func (client *Client) Write() {
 }
 
 func (c *Client) Close() {
-	for _, ch := range c.stopChannels{
-			ch <- true
+	for _, ch := range c.stopChannels {
+		ch <- true
 	}
 	close(c.send)
 }
 
 func NewClient(socket *websocket.Conn, findHandler FindHandler, session *r.Session) *Client {
 	return &Client{
-		send:        make(chan Message),
-		socket:      socket,
-		findHandler: findHandler,
-		session:     session,
-		stopChannel: make(map[int]chan bool)
+		send:         make(chan Message),
+		socket:       socket,
+		findHandler:  findHandler,
+		session:      session,
+		stopChannels: make(map[int]chan bool),
 	}
 }

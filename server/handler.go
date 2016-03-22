@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
+
 	r "github.com/dancannon/gorethink"
 	"github.com/mitchellh/mapstructure"
 )
 
-const(
+const (
 	ChannelStop = iota
 	UserStop
 	MessageStop
@@ -29,7 +31,7 @@ func addChannel(client *Client, data interface{}) {
 }
 
 func subscribeChannel(client *Client, data interface{}) {
-	stop:= client.NewStopChannel(ChannelStop)
+	stop := client.NewStopChannel(ChannelStop)
 	result := make(chan r.ChangeResponse)
 	cursor, err := r.Table("channel").
 		Changes(r.ChangesOpts{IncludeInitial: true}).
@@ -43,20 +45,24 @@ func subscribeChannel(client *Client, data interface{}) {
 		for cursor.Next(&change) {
 			result <- change
 		}
-		}()
+	}()
 
-		go func(){
-			for {
-				select{
-					case <-stop:
-						cursor.Close()
-						return
-					case change := <-result:
-						if change.NewValue != nil && change.OldValue == nil {
-							client.send <- Message{"channel add", change.NewValue}
-							fmt.Println("sent channel add message")
-						}
+	go func() {
+		for {
+			select {
+			case <-stop:
+				cursor.Close()
+				return
+			case change := <-result:
+				if change.NewValue != nil && change.OldValue == nil {
+					client.send <- Message{"channel add", change.NewValue}
+					fmt.Println("sent channel add message")
 				}
 			}
-			}()
+		}
+	}()
+}
+
+func unsubscribeChannel(client *Client, data interface{}) {
+	client.StopForKey(ChannelStop)
 }
